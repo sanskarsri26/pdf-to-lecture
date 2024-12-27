@@ -106,3 +106,11 @@ Using Gemini (presumably referring to an AI API like Google's Gemini AI) to gene
 
 ### **Conclusion**
 This idea is definitely feasible. Gemini can handle the text structuring, and TTS APIs can bring the lecture to life with voice. The main challenge is achieving seamless integration and ensuring the final output is professional and engaging. If you'd like, I can help design the architecture or provide code snippets for specific parts of the workflow. Let me know!
+
+
+
+
+/Users/sanskarsrivastava/Downloads/M3-NFA-L1-NondeterminismByAnalogy-handout.pdf
+
+
+AIzaSyCSqsv69biM6pCAkPGEDh9XRM5WpVBraf4
