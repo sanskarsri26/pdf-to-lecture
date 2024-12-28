@@ -1,86 +1,76 @@
-import fitz  # PyMuPDF for PDF processing
+import os
 import base64
-import io
 import httpx
+from pdf2image import convert_from_path
+from PIL import Image
+import io
+import google.generativeai as genai
 
+# Configure API Key
+genai.configure(api_key="AIzaSyCSqsv69biM6pCAkPGEDh9XRM5WpVBraf4")
 
-# Function to extract images from a PDF file
-def extract_images_from_pdf(pdf_path):
-    images = []
-    doc = fitz.open(pdf_path)  # Open the PDF file
-    for page_num in range(len(doc)):
-        page = doc.load_page(page_num)  # Load each page
-        image_list = page.get_images(full=True)  # Get all images on the page
+# Initialize the generative model
+model = genai.GenerativeModel("gemini-1.5-flash")
 
-        for img_index, img in enumerate(image_list):
-            xref = img[0]  # Get the xref of the image
-            base_image = doc.extract_image(xref)  # Extract the image
-            image_bytes = base_image["image"]  # Get the image bytes
-            images.append(image_bytes)
-    return images
-
-
-# Function to convert image to Base64 (no saving to disk)
-def image_to_base64(image_bytes):
-    return base64.b64encode(image_bytes).decode("utf-8")
-
-
-# Function to send image to Gemini API
-def send_image_to_gemini(image_bytes, prompt, api_key):
-    # Convert the image bytes to base64
-    image_base64 = image_to_base64(image_bytes)
-
-    # Define the API URL for Gemini
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
-
-    headers = {
-        "Content-Type": "application/json",
-    }
-
-    # Prepare the payload without mime_type and data in parts[1]
-    payload = {
-        "contents": [
-            {
-                "parts": [
-                    {"text": prompt},  # Adding text prompt
-                    {"image": image_base64},  # Directly adding the image base64 encoded
-                ]
-            }
-        ]
-    }
-
-    # Send the request to the Gemini API
-    response = httpx.post(url, json=payload, headers=headers)
-
-    if response.status_code == 200:
-        return response.json()  # Return the response if successful
+# Function to process a single PDF or all PDFs in a directory
+def process_pdfs(input_path):
+    # Check if the input is a directory
+    if os.path.isdir(input_path):
+        print(f"Processing all PDFs in the directory: {input_path}")
+        # Iterate through all the files in the directory
+        for filename in os.listdir(input_path):
+            if filename.endswith(".pdf"):  # Check if the file is a PDF
+                pdf_path = os.path.join(input_path, filename)
+                print(f"Processing PDF file: {pdf_path}")
+                process_pdf(pdf_path)
+    elif os.path.isfile(input_path) and input_path.endswith(".pdf"):
+        # If it's a single PDF file, process it directly
+        print(f"Processing single PDF file: {input_path}")
+        process_pdf(input_path)
     else:
-        return f"Error: {response.status_code} - {response.text}"  # Error handling
+        print(
+            "Invalid input. Please provide a valid PDF file or directory containing PDFs."
+        )
 
 
-# Function to handle multiple images from PDF
-def send_multiple_images_from_pdf(pdf_path, prompt, api_key):
-    images = extract_images_from_pdf(pdf_path)
-    responses = []
+# Function to process each PDF and convert it to images
+def process_pdf(pdf_path):
+    # Convert the PDF into a list of images (one per page)
+    images = convert_from_path(pdf_path)
 
-    for image in images:
-        response = send_image_to_gemini(image, prompt, api_key)
-        responses.append(response)
-
-    return responses
-
-
-# Example function to call for a single image from PDF
-def main():
-    api_key = "AIzaSyCSqsv69biM6pCAkPGEDh9XRM5WpVBraf4"
-    pdf_path = input(
-        "Enter the full path to the PDF file: "
-    )  # Ask user for PDF file path
-    prompt = "Describe the content of the images in this PDF."
-
-    response = send_multiple_images_from_pdf(pdf_path, prompt, api_key)
-    print(response)
+    # Iterate through all the images (pages) and send to Gemini API
+    for i, image in enumerate(images):
+        print(f"Processing page {i+1} of {pdf_path}...")
+        result = send_image_to_gemini(image)
+        print(f"Result for page {i+1}: {result}")
 
 
-if __name__ == "__main__":
-    main()
+# Function to send an image (encoded as Base64) to the Gemini API
+def send_image_to_gemini(image: Image.Image):
+    # Convert the image to a byte stream
+    img_byte_arr = io.BytesIO()
+    image.save(img_byte_arr, format="JPEG")
+    img_byte_arr = img_byte_arr.getvalue()
+
+    # Encode the image to Base64
+    encoded_image = base64.b64encode(img_byte_arr).decode("utf-8")
+
+    # Define the prompt you want to use
+    prompt = """
+    Please analyze the attachment and create a series of slides based on the content. For each slide, break down the key concepts, explanations, and visual elements. Send the slides as images in byte-encoded form (Base64). Each slide should be designed with a clean, professional layout, containing bullet points, diagrams, and any other necessary visual aids to enhance understanding. The slides should follow a logical sequence and be easy to understand for someone learning the subject.
+
+    Once the analysis is done, send each slide as an image in bytes encoded form (Base64) along with the content and description.
+    """
+    # Send the request with the image (Base64 encoded) and text
+    response = model.generate_content(
+        [{"mime_type": "image/jpeg", "data": encoded_image}, prompt]
+    )
+
+    return response.text
+
+
+# Take the file path or directory path as input
+input_path = input("Enter the file or directory path containing PDF files: ")
+
+# Process the provided input path
+process_pdfs(input_path)
