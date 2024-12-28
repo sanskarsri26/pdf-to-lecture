@@ -5,6 +5,7 @@ from pdf2image import convert_from_path
 from PIL import Image
 import io
 import google.generativeai as genai
+from pptx import Presentation
 
 # Configure API Key
 genai.configure(api_key="AIzaSyCSqsv69biM6pCAkPGEDh9XRM5WpVBraf4")
@@ -50,7 +51,10 @@ def process_pdf(pdf_path):
 
     # Send all the images as a single request to Gemini API
     result = send_images_to_gemini(encoded_images)
-    print(f"Result: {result}")
+
+    if result:
+        print(f"Result: {result}")
+        create_presentation(result)
 
 
 # Function to convert an image to Base64 encoding
@@ -109,6 +113,40 @@ def send_images_to_gemini(encoded_images):
     except Exception as e:
         print(f"Error in send_images_to_gemini: {str(e)}")
         return None
+
+
+# Function to create a PowerPoint presentation from Gemini's output
+def create_presentation(gemini_response):
+    presentation = Presentation()
+
+    # Split the Gemini response by slides (assumed format)
+    slides = gemini_response.split(
+        "\n\n"
+    )  # Assuming each slide is separated by new lines
+
+    for slide in slides:
+        lines = slide.strip().split("\n")
+        if len(lines) > 1:
+            slide_title = lines[0].replace("Slide Title:", "").strip()
+            slide_explanation = (
+                "\n".join(lines[1:]).replace("Detailed Explanation:", "").strip()
+            )
+
+            # Create a new slide with a title and content
+            slide_layout = presentation.slide_layouts[1]  # Title and Content layout
+            slide_object = presentation.slides.add_slide(slide_layout)
+
+            # Set slide title
+            title = slide_object.shapes.title
+            title.text = slide_title
+
+            # Set slide content
+            content = slide_object.shapes.placeholders[1]
+            content.text = slide_explanation
+
+    # Save the PowerPoint file
+    presentation.save("presentation.pptx")
+    print("PowerPoint presentation saved as 'presentation.pptx'.")
 
 
 # Take the file path or directory path as input
