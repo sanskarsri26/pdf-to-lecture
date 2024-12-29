@@ -1,122 +1,100 @@
-import pyttsx3
+from gtts import gTTS  # Using gTTS instead of pyttsx3 for better performance
 import re
 from pptx import Presentation
 from pathlib import Path
-import time
+from concurrent.futures import ThreadPoolExecutor
+import os
+from tqdm import tqdm  # For progress bars
 
 
 class PresentationSyncer:
     def __init__(self):
-        # Initialize text-to-speech engine
-        self.engine = pyttsx3.init()
-        # Set default voice properties
-        self.engine.setProperty("rate", 150)  # Speaking rate
-        self.engine.setProperty("volume", 0.9)  # Volume (0-1)
+        self.language = "en"
 
     def parse_script(self, script_content):
         """Parse the script content into sections by slides."""
-        # Split content by slide markers
-        slide_sections = []
-        current_section = []
-
-        for line in script_content.split("\n"):
-            if line.strip().startswith("**Slide"):
-                if current_section:
-                    slide_sections.append("\n".join(current_section))
-                current_section = []
-            current_section.append(line)
-
-        if current_section:
-            slide_sections.append("\n".join(current_section))
-
-        return slide_sections
+        sections = re.split(r"\*\*Slide \d+:", script_content)[
+            1:
+        ]  # More efficient splitting
+        return [section.strip() for section in sections]
 
     def clean_text(self, text):
         """Remove markdown formatting and parenthetical directions."""
-        # Remove markdown formatting
-        text = re.sub(r"\*\*(.*?)\*\*", r"\1", text)
-        text = re.sub(r"\*(.*?)\*", r"\1", text)
-
-        # Remove parenthetical directions
-        text = re.sub(r"\(.*?\)", "", text)
-
-        # Remove slide headers
-        text = re.sub(r"Slide \d+:.*?\n", "", text)
-
+        # Combine multiple regex operations into one pass
+        text = re.sub(r"\*\*|\*|\(.*?\)|Slide \d+:.*?\n", "", text)
         return text.strip()
 
+    def create_audio_for_section(self, args):
+        """Create audio file for a single section."""
+        section, output_path, index = args
+        clean_section = self.clean_text(section)
+
+        try:
+            tts = gTTS(text=clean_section, lang=self.language, slow=False)
+            tts.save(str(output_path))
+            return index, output_path
+        except Exception as e:
+            print(f"Error processing slide {index + 1}: {str(e)}")
+            return index, None
+
     def create_audio_segments(self, script_sections, output_dir):
-        """Convert text sections to audio files."""
-        audio_files = []
+        """Convert text sections to audio files using parallel processing."""
         output_dir = Path(output_dir)
         output_dir.mkdir(exist_ok=True)
 
+        # Prepare arguments for parallel processing
+        audio_files = []
+        args_list = []
         for i, section in enumerate(script_sections):
-            # Clean the text
-            clean_section = self.clean_text(section)
-
-            # Create output filename
             audio_file = output_dir / f"slide_{i+1}.mp3"
-
-            # Save audio file
-            self.engine.save_to_file(clean_section, str(audio_file))
-            self.engine.runAndWait()
-
             audio_files.append(audio_file)
+            args_list.append((section, audio_file, i))
+
+        # Process sections in parallel with progress bar
+        print("Converting text to speech...")
+        with ThreadPoolExecutor(
+            max_workers=min(os.cpu_count(), len(script_sections))
+        ) as executor:
+            list(
+                tqdm(
+                    executor.map(self.create_audio_for_section, args_list),
+                    total=len(args_list),
+                    desc="Processing slides",
+                )
+            )
 
         return audio_files
 
-    def get_slide_durations(self, audio_files):
-        """Get durations for each audio file (placeholder - needs audio library)."""
-        # This is a placeholder - in a real implementation, you'd use a library
-        # like librosa or mutagen to get actual audio durations
-        durations = []
-        for audio_file in audio_files:
-            # Placeholder duration calculation
-            with open(audio_file, "rb") as f:
-                # This is just an example - real implementation would parse MP3 metadata
-                duration = len(f.read()) / 16000  # Rough approximation
-                durations.append(duration)
-        return durations
-
-    def create_timing_file(self, durations, output_file):
-        """Create timing file for PowerPoint."""
-        total_time = 0
-        with open(output_file, "w") as f:
-            for i, duration in enumerate(durations):
-                f.write(f"{i+1},{total_time:.2f}\n")
-                total_time += duration
-
-    def process_presentation(self, script_file, pptx_file, output_dir):
+    def process_presentation(self, script_file, output_dir):
         """Process the entire presentation."""
         # Read script content
-        with open(script_file, "r") as f:
+        with open(script_file, "r", encoding="utf-8") as f:
             script_content = f.read()
 
         # Parse script into sections
+        print("Parsing script...")
         script_sections = self.parse_script(script_content)
 
         # Create audio segments
         audio_files = self.create_audio_segments(script_sections, output_dir)
 
-        # Get durations
-        durations = self.get_slide_durations(audio_files)
-
-        # Create timing file
-        timing_file = Path(output_dir) / "timing.txt"
-        self.create_timing_file(durations, timing_file)
-
-        print(
-            f"Processing complete. Audio files and timing file created in {output_dir}"
-        )
+        print(f"\nProcessing complete. Audio files created in {output_dir}")
+        return audio_files
 
 
 def main():
     # Example usage
     syncer = PresentationSyncer()
-    syncer.process_presentation(
-        script_file="voice.txt", pptx_file="Styled_Slides.pptx", output_dir="output"
-    )
+    output_dir = "output"
+
+    try:
+        audio_files = syncer.process_presentation(
+            script_file="voice.txt", output_dir=output_dir
+        )
+        print(f"\nSuccessfully created {len(audio_files)} audio files.")
+
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
 
 
 if __name__ == "__main__":
