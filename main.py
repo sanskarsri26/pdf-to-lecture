@@ -8,3 +8,6 @@ subprocess.run(["python", "text-extraction.py"])
 subprocess.run(["python", "slide-maker.py"])
 
 subprocess.run(["python", "voice-generation.py"])
+
+subprocess.run(["python", "extract-image-from-ppt.py"])
+
