@@ -1,53 +1,107 @@
-Slide 1:
-**Slide Title**: Introduction to Nondeterminism
+Here's a lecture formatted as slides, based on the provided images.  I've aimed for a clear and detailed explanation suitable for students learning this material for the first time.
 
-**Detailed Explanation**:  Nondeterminism, in its simplest form, represents the concept of multiple possible outcomes from a single action or event. Unlike determinism, where a single input always produces a predictable output, nondeterminism embraces the possibility of various outcomes.  This is not randomness; instead, it acknowledges the existence of multiple valid paths or choices.  Imagine a coin that can land on both heads and tails simultaneously—that's a simplified representation of nondeterminism. We will explore this concept through analogies in the following slides.
+**Slide 1:**
 
+**Slide Title**: Proving Non-Context-Freedom: Introduction
 
-Slide 2:
-**Slide Title**: Navigating a Maze: Determinism
-
-**Detailed Explanation**: Let's consider navigating a maze using a deterministic strategy.  A deterministic approach means following a rigidly defined set of rules that will always produce the same result, regardless of the maze. For example, a "left-most" strategy always chooses the leftmost path at every junction. This guarantees a solution for some mazes, but might fail for others.  Deterministic algorithms guarantee a specific outcome given a specific input, but might not be suitable for all situations.  The "left-most" rule would consistently solve one type of maze but consistently fail in another; determinism is about the guaranteed outcome of a specific strategy.
+**Detailed Explanation**: This lecture focuses on proving that certain languages are *not* context-free.  We'll use the Pumping Lemma for context-free languages, a powerful tool that allows us to demonstrate the limitations of context-free grammars.  The lemma essentially states that in a context-free language, sufficiently long strings can be "pumped" – meaning a portion of the string can be repeated without leaving the language.  By showing that this property fails for a given language, we prove it's non-context-free. This is crucial in understanding the expressive power of different formal language classes.
 
 
-Slide 3:
-**Slide Title**: Navigating a Maze: Nondeterminism
+**Slide 2:**
 
-**Detailed Explanation**:  Now, let's contrast this with a nondeterministic approach to maze navigation. In a nondeterministic solution, we explore *all* possible paths concurrently.  This implies exploring every path simultaneously to determine if a solution exists. We aren't concerned with a specific strategy for traversal; rather, we're concerned with whether a solution exists at all.  Think of it as trying every path simultaneously to see if any lead to the exit.  If even one path does, the maze is solvable—regardless of which path led to the solution. This highlights nondeterminism's focus on the existence of a solution rather than a specific solution path.
+**Slide Title**: Outline and Resources
 
-
-Slide 4:
-**Slide Title**: Routing Packets on the Internet
-
-**Detailed Explanation**:  Consider sending a data packet from your computer to a web server. The packet's journey is not predetermined; multiple routes exist.  The network chooses a path dynamically, possibly changing with network conditions. This is a real-world instance of nondeterminism. The network doesn't follow a single prescribed route; instead, it chooses the best path available at that moment, a path which might vary significantly from one transmission to the next.  This dynamism is a key element of internet routing.
+**Detailed Explanation**: Today's lecture will cover three examples of proving non-context-freedom:  L<sub>1</sub> = {a<sup>n</sup>b<sup>n</sup>c<sup>n</sup> | n ≥ 0}, L<sub>2</sub> = {a<sup>i</sup>b<sup>j</sup>c<sup>k</sup> | 0 ≤ i ≤ j ≤ k}, and L<sub>3</sub> = {ss | s ∈ {0, 1}*}.  We will use the Pumping Lemma in each case.  For further reading and a more detailed mathematical treatment, please refer to Section 2.3 (pp. 128-129) of Sipser's "Introduction to the Theory of Computation." This text provides a robust foundation in automata theory and formal languages.
 
 
-Slide 5:
-**Slide Title**: Planning Moves in Chess
+**Slide 3:**
 
-**Detailed Explanation**: In chess, planning your move involves considering your opponent's possible responses. Your optimal move depends on anticipating your opponent's actions.  This is a nondeterministic problem because you don't know your opponent's future moves, yet you must plan based on the potential range of their choices.  A nondeterministic approach explores all possible scenarios to determine the best possible move, even in the face of the opponent's uncertainty.  Think of it as a decision tree where each branch represents a different opponent move.
+**Slide Title**: The Pumping Lemma for Context-Free Languages
 
-
-
-Slide 6:
-**Slide Title**: Why Nondeterminism Matters
-
-**Detailed Explanation**: Nondeterminism is important in theoretical computer science due to its implications on computational power and problem-solving. Allowing multiple, parallel choices (as in exploring all paths in a maze simultaneously) can potentially remove computational limitations that may exist in a purely deterministic approach. In addition, modeling uncertainty by considering all possibilities allows for stronger guarantees about the correctness, security and performance of a system or algorithm.  The existence of nondeterminism in the real world is a complex philosophical question that we will not delve into here, but it proves useful as a way of thinking about limited perspectives in various scenarios.
+**Detailed Explanation**: The Pumping Lemma states that for any context-free language *L*, there exists a pumping length *p* such that any string *w* in *L* with |*w*| ≥ *p* can be divided into five parts: *w* = *uvxyz*.  Crucially, three conditions must hold: (1) for all *i* ≥ 0, *uv<sup>i</sup>xy<sup>i</sup>z* ∈ *L*; (2) |*vy*| > 0; and (3) |*vxy*| ≤ *p*. This means we can repeat the substring *v* and *y* any number of times, and the resulting string will still be in the language. This forms the basis of our proof technique.
 
 
-Slide 7:
+**Slide 4:**
+
+**Slide Title**: Proving Non-Context-Freedom: L<sub>1</sub> - Example
+
+**Detailed Explanation**: Let's prove L<sub>1</sub> = {a<sup>n</sup>b<sup>n</sup>c<sup>n</sup> | n ≥ 0} is non-context-free.  Assume, for the sake of contradiction, that L<sub>1</sub> *is* context-free. Let *p* be the pumping length given by the Pumping Lemma. Consider the string *w* = a<sup>p</sup>b<sup>p</sup>c<sup>p</sup>.  Clearly, *w* ∈ L<sub>1</sub> and |*w*| ≥ *p*. We need to show that any valid division of *w* into *uvxyz* satisfying the Pumping Lemma’s conditions will lead to a contradiction. We’ll consider this in two cases: those where *v* and *y* contain only one type of symbol and those where *v* or *y* contain multiple symbol types.
+
+
+**Slide 5:**
+
+**Slide Title**: Proving Non-Context-Freedom: L<sub>1</sub> - Case 1
+
+**Detailed Explanation**:  Consider any division *w* = *uvxyz* where both *v* and *y* contain only one type of alphabet symbol (a, b, or c).  Regardless of which symbol(s) *v* and *y* contain, there will always be at least one symbol type missing from both *v* and *y*.  Therefore, *uv<sup>2</sup>xy<sup>2</sup>z* cannot have an equal number of a's, b's, and c's. This means *uv<sup>2</sup>xy<sup>2</sup>z* ∉ L<sub>1</sub>, a contradiction.
+
+
+**Slide 6:**
+
+**Slide Title**: Proving Non-Context-Freedom: L<sub>1</sub> - Case 2
+
+**Detailed Explanation**: Now, consider divisions *w* = *uvxyz* where *v* or *y* contains multiple types of alphabet symbols (e.g., *v* contains both a's and b's). Pumping *v* and *y* will disrupt the a<sup>n</sup>b<sup>n</sup>c<sup>n</sup> pattern.  For example, pumping up might result in more a's than b's, or more b's than c's.  This again leads to *uv<sup>i</sup>xy<sup>i</sup>z* ∉ L<sub>1</sub> for some *i*, creating a contradiction. Since both cases result in a contradiction, L<sub>1</sub> must be non-context-free.
+
+
+**Slide 7:**
+
+**Slide Title**: Proving Non-Context-Freedom: L<sub>2</sub> - Example
+
+**Detailed Explanation**: Let's move on to L<sub>2</sub> = {a<sup>i</sup>b<sup>j</sup>c<sup>k</sup> | 0 ≤ i ≤ j ≤ k}. We follow the same approach: assume L<sub>2</sub> is context-free, let *p* be the pumping length, and choose *w* = a<sup>p</sup>b<sup>p</sup>c<sup>p</sup>. Again, we'll analyze different cases based on the content of the pumped substrings *v* and *y*.
+
+
+**Slide 8:**
+
+**Slide Title**: Proving Non-Context-Freedom: L<sub>2</sub> - Case 1
+
+**Detailed Explanation**: We consider divisions *w* = *uvxyz* where *v* and *y* each contain only one type of symbol.  Unlike L<sub>1</sub>, simply having one symbol type missing isn't enough for a contradiction.  Here, we subdivide Case 1 into three subcases: (a) *v* and *y* contain no a's; (b) *v* and *y* contain no b's; (c) *v* and *y* contain no c's. We'll analyze each subcase to find a contradiction.
+
+
+**Slide 9:**
+
+**Slide Title**: Proving Non-Context-Freedom: L<sub>2</sub> - Case 1(a) & (b)
+
+**Detailed Explanation**: (a) If *v* and *y* don't contain a's, pumping down (*i* = 0) reduces the number of b's or c's, violating the i ≤ j ≤ k condition. (b) If *v* and *y* don't contain b's, at least one of *v* or *y* must contain a's or c's.  Pumping will either increase a's relative to b's or c's relative to b's.  Both scenarios cause a violation of i ≤ j ≤ k, resulting in a contradiction.
+
+
+**Slide 10:**
+
+**Slide Title**: Proving Non-Context-Freedom: L<sub>2</sub> - Case 1(c)
+
+**Detailed Explanation**: (c) If *v* and *y* don't contain c's, pumping up (*i* > 1) will increase the number of a's or b's, potentially breaking the i ≤ j ≤ k condition.  Therefore, this subcase also leads to a contradiction.  Since all three subcases of Case 1 yield contradictions, Case 1 itself is proven.
+
+
+**Slide 11:**
+
+**Slide Title**: Proving Non-Context-Freedom: L<sub>2</sub> - Case 2
+
+**Detailed Explanation**:  Case 2 considers *v* or *y* containing multiple symbol types. Pumping will disrupt the order of a's, b's, and c's, violating the i ≤ j ≤ k constraint, leading to a contradiction.
+
+
+**Slide 12:**
+
+**Slide Title**: Proving Non-Context-Freedom: L<sub>3</sub> - First Attempt
+
+**Detailed Explanation**: Let's tackle L<sub>3</sub> = {ss | s ∈ {0, 1}*}.  This example demonstrates that choosing the correct string for the Pumping Lemma is crucial. Suppose we initially let *s* = 0<sup>p</sup>1<sup>p</sup> and *w* = *ss*. This string can be pumped without violating the condition of being in L3, thus not immediately leading to a contradiction. We need to revise our approach.
+
+
+**Slide 13:**
+
+**Slide Title**: Proving Non-Context-Freedom: L<sub>3</sub> - Corrected Proof
+
+**Detailed Explanation**:  The previous attempt failed because we could pump the string.  Let's revisit this.  Consider any division *w* = *uvxyz* where |*vy*| > 0 and |*vxy*| ≤ *p*.  If *vxy* is contained in the first half of *w*, then *uv<sup>i</sup>xy<sup>i</sup>z* will start with a 0 but have a 1 in its second half (this is true because the length of vxy is less than or equal to p).  Similarly, if *vxy* is in the second half, the opposite situation arises.
+
+
+**Slide 14:**
+
+**Slide Title**: Proving Non-Context-Freedom: L<sub>3</sub> - Final Argument
+
+**Detailed Explanation**: The only remaining possibility is that *vxy* straddles the midpoint of *w*. Because |*vxy*| ≤ *p*, *v* and *y* must be in the middle part of w.  Pumping down (*i* = 0) will create a string that violates the ss condition. Thus, no matter which division we choose, we always arrive at a contradiction. Consequently, L<sub>3</sub> is not context-free.
+
+
+**Slide 15:**
+
 **Slide Title**: Summary
 
-**Detailed Explanation**:  In this lecture, we used three tangible analogies (maze navigation, internet packet routing, and chess strategy) to illustrate the concept of nondeterminism.  Nondeterminism helps us explore possibilities rather than following predetermined rules.  It's crucial for modelling systems with inherent uncertainty and exploring the potential for enhanced computational power in theory.
+**Detailed Explanation**: In this lecture, we successfully used the Pumping Lemma to prove that L<sub>1</sub>, L<sub>2</sub>, and L<sub>3</sub> are non-context-free.  This demonstrates the power of the lemma in analyzing the limitations of context-free languages.  Remember that choosing the right string and carefully analyzing the possible pump positions are critical for successful application of this method.
 
 
-Slide 8:
-**Slide Title**: References
-
-**Detailed Explanation**: This slide lists the sources used in preparing this lecture, providing proper attribution and allowing for further reading on the topics discussed.
-
-
-Slide 9:
-**Slide Title**: Thank You!
-
-**Detailed Explanation**:  This is a concluding slide expressing gratitude to the audience and acknowledging any contributors to the lecture material.

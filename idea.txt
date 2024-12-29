@@ -111,6 +111,7 @@ This idea is definitely feasible. Gemini can handle the text structuring, and TT
 
 
 /Users/sanskarsrivastava/Downloads/M3-NFA-L1-NondeterminismByAnalogy-handout.pdf
-/Users/sanskarsrivastava/Downloads/Dijkstra.pdf
+
+/Users/sanskarsrivastava/Downloads/M8-NCF-L2-ProvingNonContextFreedom-handout.pdf
 
 AIzaSyCSqsv69biM6pCAkPGEDh9XRM5WpVBraf4
