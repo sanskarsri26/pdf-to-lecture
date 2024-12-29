@@ -1,101 +1,56 @@
-from gtts import gTTS  # Using gTTS instead of pyttsx3 for better performance
-import re
-from pptx import Presentation
-from pathlib import Path
-from concurrent.futures import ThreadPoolExecutor
+import subprocess
 import os
-from tqdm import tqdm  # For progress bars
 
 
-class PresentationSyncer:
-    def __init__(self):
-        self.language = "en"
-
-    def parse_script(self, script_content):
-        """Parse the script content into sections by slides."""
-        sections = re.split(r"\*\*Slide \d+:", script_content)[
-            1:
-        ]  # More efficient splitting
-        return [section.strip() for section in sections]
-
-    def clean_text(self, text):
-        """Remove markdown formatting and parenthetical directions."""
-        # Combine multiple regex operations into one pass
-        text = re.sub(r"\*\*|\*|\(.*?\)|Slide \d+:.*?\n", "", text)
-        return text.strip()
-
-    def create_audio_for_section(self, args):
-        """Create audio file for a single section."""
-        section, output_path, index = args
-        clean_section = self.clean_text(section)
-
-        try:
-            tts = gTTS(text=clean_section, lang=self.language, slow=False)
-            tts.save(str(output_path))
-            return index, output_path
-        except Exception as e:
-            print(f"Error processing slide {index + 1}: {str(e)}")
-            return index, None
-
-    def create_audio_segments(self, script_sections, output_dir):
-        """Convert text sections to audio files using parallel processing."""
-        output_dir = Path(output_dir)
-        output_dir.mkdir(exist_ok=True)
-
-        # Prepare arguments for parallel processing
-        audio_files = []
-        args_list = []
-        for i, section in enumerate(script_sections):
-            audio_file = output_dir / f"slide_{i+1}.mp3"
-            audio_files.append(audio_file)
-            args_list.append((section, audio_file, i))
-
-        # Process sections in parallel with progress bar
-        print("Converting text to speech...")
-        with ThreadPoolExecutor(
-            max_workers=min(os.cpu_count(), len(script_sections))
-        ) as executor:
-            list(
-                tqdm(
-                    executor.map(self.create_audio_for_section, args_list),
-                    total=len(args_list),
-                    desc="Processing slides",
-                )
-            )
-
-        return audio_files
-
-    def process_presentation(self, script_file, output_dir):
-        """Process the entire presentation."""
-        # Read script content
-        with open(script_file, "r", encoding="utf-8") as f:
-            script_content = f.read()
-
-        # Parse script into sections
-        print("Parsing script...")
-        script_sections = self.parse_script(script_content)
-
-        # Create audio segments
-        audio_files = self.create_audio_segments(script_sections, output_dir)
-
-        print(f"\nProcessing complete. Audio files created in {output_dir}")
-        return audio_files
+def run_applescript(script):
+    process = subprocess.Popen(
+        ["osascript", "-e", script], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
+    out, err = process.communicate()
+    if err:
+        print(f"Error: {err.decode()}")
+    return out, err
 
 
-def main():
-    # Example usage
-    syncer = PresentationSyncer()
-    output_dir = "output"
-
-    try:
-        audio_files = syncer.process_presentation(
-            script_file="voice.txt", output_dir=output_dir
-        )
-        print(f"\nSuccessfully created {len(audio_files)} audio files.")
-
-    except Exception as e:
-        print(f"An error occurred: {str(e)}")
+def get_relative_audio_path(base_dir, output_dir, audio_filename):
+    # Construct relative path for audio file inside 'output' directory
+    return os.path.join(base_dir, output_dir, audio_filename)
 
 
-if __name__ == "__main__":
-    main()
+# Path to the directory containing your PowerPoint file
+base_dir = "/Users/sanskarsrivastava/Desktop/CSE/pdf-to-lecture"  # The base directory where your pptx file is located
+pptx_file = "Styled_Slides.pptx"  # Your PowerPoint file name
+output_dir = "output"  # Audio files are inside the 'output' directory
+
+# AppleScript code to sync audio with slides (modified for relative paths)
+applescript_code = f"""
+tell application "Microsoft PowerPoint"
+    set pptFile to "{base_dir}/{pptx_file}"
+    open pptFile
+    delay 2 -- wait for PowerPoint to load
+
+    set slideCount to count of slides of active presentation
+    repeat with i from 1 to slideCount
+        -- Construct relative path to the audio file in the 'output' folder
+        set audioFile to "{base_dir}/{output_dir}/slide_" & i & ".mp3"
+        
+        -- Insert the audio file into the slide
+        tell slide i of active presentation
+            -- Make new sound shape
+            set audioShape to make new sound with properties {file name:audioFile}
+            
+            -- Set auto start and play sound properties
+            set auto start of audioShape to true
+            set play sound of audioShape to true
+        end tell
+    end repeat
+end tell
+"""
+
+
+# Run the AppleScript from Python
+out, err = run_applescript(applescript_code)
+if err:
+    print(f"Error: {err.decode()}")
+else:
+    print(f"Success: {out.decode()}")

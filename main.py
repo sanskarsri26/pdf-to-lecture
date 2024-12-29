@@ -6,3 +6,5 @@ subprocess.run(["python", "text-extraction.py"])
 
 # Run second script
 subprocess.run(["python", "slide-maker.py"])
+
+subprocess.run(["python", "voice-generation.py"])
