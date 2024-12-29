@@ -1,98 +1,113 @@
 from pptx import Presentation
-from pptx.util import Pt
+from pptx.util import Pt, Inches
 from pptx.dml.color import RGBColor
-from textwrap import wrap
+import re
 
 
-# Function to parse the text content and extract slides
 def parse_text_to_slides(file_path):
-    slides = []
     with open(file_path, "r", encoding="utf-8") as file:
         content = file.read()
 
-    # Split by each slide block
-    slide_blocks = content.split("**Slide ")
+    # Split into individual slide sections
+    slide_sections = content.split("\n\n**Slide ")
 
-    for block in slide_blocks:
-        if not block.strip():
+    slides = []
+    # Skip the first split as it's the introduction text
+    for section in slide_sections[1:]:
+        try:
+            # Extract the main slide title line
+            first_line_end = section.find("\n")
+            if first_line_end == -1:
+                continue
+
+            # Find the actual title and content markers
+            title_marker = section.find("* **Slide Title**:")
+            content_marker = section.find("* **Detailed Explanation**:")
+
+            if title_marker != -1 and content_marker != -1:
+                # Extract the title text
+                title_start = title_marker + len("* **Slide Title**:")
+                title_end = section.find("\n", title_start)
+                title = section[title_start:title_end].strip()
+
+                # Extract the content text
+                content_start = content_marker + len("* **Detailed Explanation**:")
+                next_section = section.find("\n\n**Slide", content_start)
+                if next_section == -1:
+                    content = section[content_start:].strip()
+                else:
+                    content = section[content_start:next_section].strip()
+
+                # Clean up any remaining markdown
+                title = re.sub(r"\*+", "", title)
+                content = re.sub(r"\*+", "", content)
+
+                slides.append((title, content))
+                print(f"Parsed slide: {title[:30]}...")  # Debug print
+
+        except Exception as e:
+            print(f"Error parsing slide section: {str(e)}")
             continue
-
-        # Extract title and content
-        title_start = block.find("**Slide Title**:") + len("**Slide Title**:")
-        explanation_start = block.find("**Detailed Explanation**:")
-
-        title = (
-            block[title_start:explanation_start].strip()
-            if explanation_start > -1
-            else None
-        )
-        explanation = (
-            block[explanation_start + len("**Detailed Explanation**:") :].strip()
-            if explanation_start > -1
-            else None
-        )
-
-        if title and explanation:
-            slides.append((title, explanation))
 
     return slides
 
 
-# Function to wrap text for better display
-def wrap_text(text, max_line_length=80):
-    """
-    Wrap text to ensure it fits within the slide content box.
-    """
-    wrapped_lines = []
-    for paragraph in text.split("\n"):
-        wrapped_lines.extend(wrap(paragraph, max_line_length))
-    return "\n".join(wrapped_lines)
-
-
-# Function to add a slide with enhanced formatting
 def add_styled_slide(presentation, title, content):
-    slide_layout = presentation.slide_layouts[1]  # Title and Content layout
+    # Use a layout with title and content
+    slide_layout = presentation.slide_layouts[1]
     slide = presentation.slides.add_slide(slide_layout)
 
-    # Set slide background color
+    # Set background
     background = slide.background
     fill = background.fill
     fill.solid()
-    fill.fore_color.rgb = RGBColor(240, 240, 240)  # Light gray background
+    fill.fore_color.rgb = RGBColor(255, 255, 255)
 
-    # Style the title
-    title_placeholder = slide.shapes.title
-    title_placeholder.text = title
-    title_placeholder.text_frame.paragraphs[0].font.bold = True
-    title_placeholder.text_frame.paragraphs[0].font.size = Pt(36)
-    title_placeholder.text_frame.paragraphs[0].font.color.rgb = RGBColor(0, 51, 102)
-
-    # Style the content with wrapped text
-    wrapped_content = wrap_text(content, max_line_length=80)
-    content_placeholder = slide.placeholders[1]
-    content_placeholder.text = wrapped_content
-
-    for paragraph in content_placeholder.text_frame.paragraphs:
-        paragraph.font.size = Pt(18)
+    # Add and style title
+    title_shape = slide.shapes.title
+    title_shape.text = title
+    title_frame = title_shape.text_frame
+    for paragraph in title_frame.paragraphs:
+        paragraph.font.size = Pt(44)
+        paragraph.font.bold = True
         paragraph.font.color.rgb = RGBColor(0, 0, 0)
-        paragraph.space_after = Pt(10)  # Add spacing between paragraphs
+        paragraph.alignment = 1  # Center alignment
+
+    # Add and style content
+    body_shape = slide.placeholders[1]
+    body_shape.text = content
+    body_frame = body_shape.text_frame
+
+    # Format the content text
+    for paragraph in body_frame.paragraphs:
+        paragraph.font.size = Pt(20)
+        paragraph.font.color.rgb = RGBColor(0, 0, 0)
+        paragraph.space_before = Pt(12)
+        paragraph.space_after = Pt(12)
 
 
-# Main function to create PowerPoint from a text file with enhanced formatting
 def create_styled_presentation(file_path, output_pptx):
     slides = parse_text_to_slides(file_path)
+
+    if not slides:
+        print("No slides were parsed!")
+        return
+
     presentation = Presentation()
 
+    # Set slide size to 16:9
+    presentation.slide_width = Inches(13.333)
+    presentation.slide_height = Inches(7.5)
+
+    # Create each slide
     for title, content in slides:
         add_styled_slide(presentation, title, content)
 
     presentation.save(output_pptx)
-    print(f"Presentation saved as '{output_pptx}'")
+    print(f"Created presentation with {len(slides)} slides")
 
-
-# Input text file and output PowerPoint file
-input_text_file = "test.txt"  # Replace with your text file
-output_pptx_file = "Styled_Slides.pptx"
 
 # Create the presentation
+input_text_file = "test.txt"
+output_pptx_file = "Slides.pptx"
 create_styled_presentation(input_text_file, output_pptx_file)
