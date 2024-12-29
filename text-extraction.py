@@ -129,40 +129,6 @@ def save_response_to_text(response, pdf_path):
     print(f"API response saved as '{output_file}'.")
 
 
-# Function to create a PowerPoint presentation from Gemini's output
-def create_presentation(gemini_response):
-    presentation = Presentation()
-
-    # Split the Gemini response by slides (assumed format)
-    slides = gemini_response.split(
-        "\n\n"
-    )  # Assuming each slide is separated by new lines
-
-    for slide in slides:
-        lines = slide.strip().split("\n")
-        if len(lines) > 1:
-            slide_title = lines[0].replace("Slide Title:", "").strip()
-            slide_explanation = (
-                "\n".join(lines[1:]).replace("Detailed Explanation:", "").strip()
-            )
-
-            # Create a new slide with a title and content
-            slide_layout = presentation.slide_layouts[1]  # Title and Content layout
-            slide_object = presentation.slides.add_slide(slide_layout)
-
-            # Set slide title
-            title = slide_object.shapes.title
-            title.text = slide_title
-
-            # Set slide content
-            content = slide_object.shapes.placeholders[1]
-            content.text = slide_explanation
-
-    # Save the PowerPoint file
-    presentation.save("presentation.pptx")
-    print("PowerPoint presentation saved as 'presentation.pptx'.")
-
-
 # Take the file path or directory path as input
 input_path = input("Enter the file or directory path containing PDF files: ")
 

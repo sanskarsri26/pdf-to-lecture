@@ -134,6 +134,6 @@ def create_styled_presentation(file_path, output_pptx):
 
 
 # Create the presentation
-input_text_file = "test.txt"
+input_text_file = "M3-NFA-L1-NondeterminismByAnalogy-handout_response.txt"
 output_pptx_file = "Styled_Slides.pptx"
 create_styled_presentation(input_text_file, output_pptx_file)
