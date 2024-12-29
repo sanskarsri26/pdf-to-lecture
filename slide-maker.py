@@ -12,10 +12,8 @@ def parse_text_to_slides(file_path):
     print("Content Read from File:")
     print(content)  # Check the content
 
-    # Split by the "Slide X:" markers
     slide_sections = re.split(r"\n?Slide \d+:\n", content)
 
-    # Check if multiple sections are found
     print(f"Number of sections found: {len(slide_sections)}")
 
     slides = []
@@ -147,6 +145,6 @@ def create_styled_presentation(file_path, output_pptx):
 
 
 # Create the presentation
-input_text_file = "M3-NFA-L1-NondeterminismByAnalogy-handout_response.txt"
+input_text_file = "output.txt"
 output_pptx_file = "Styled_Slides.pptx"
 create_styled_presentation(input_text_file, output_pptx_file)

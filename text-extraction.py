@@ -120,12 +120,11 @@ def send_images_to_gemini(encoded_images):
         return None
 
 
-def save_response_to_text(response, pdf_path):
-    # Extract the base name of the PDF (without extension)
-    base_name = os.path.splitext(os.path.basename(pdf_path))[0]
+def save_response_to_text(response, pdf_path=None):
+    # Set the output filename as 'output.txt'
+    output_file = "output.txt"
 
     # Create a text file to save the API response
-    output_file = f"{base_name}_response.txt"
     with open(output_file, "w", encoding="utf-8") as file:
         file.write(response)
 
