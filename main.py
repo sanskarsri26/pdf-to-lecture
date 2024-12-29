@@ -1,0 +1,8 @@
+# Main script
+import subprocess
+
+# Run first script
+subprocess.run(["python", "text-extraction.py"])
+
+# Run second script
+subprocess.run(["python", "slide-maker.py"])
