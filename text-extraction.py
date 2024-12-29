@@ -1,3 +1,4 @@
+import sys
 import os
 import base64
 import httpx
@@ -131,8 +132,13 @@ def save_response_to_text(response, pdf_path=None):
     print(f"API response saved as '{output_file}'.")
 
 
-# Take the file path or directory path as input
-input_path = input("Enter the file or directory path containing PDF files: ")
+# Command-line argument handling
+if len(sys.argv) != 2:
+    print("Usage: python text-extraction.py <path_to_pdf_or_directory>")
+    sys.exit(1)
+
+# Retrieve the file/directory path from command-line arguments
+input_path = sys.argv[1]
 
 # Process the provided input path
 process_pdfs(input_path)
