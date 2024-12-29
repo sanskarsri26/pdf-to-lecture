@@ -6,6 +6,7 @@ from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.dml.line import LineFormat
 
+number = 0;
 
 class SlideTheme:
     def __init__(self):
@@ -214,6 +215,7 @@ def create_styled_presentation(input_text, output_pptx):
     # Create slides
     total_slides = len(slides_content)
     for i, (title, content) in enumerate(slides_content, 1):
+        number = total_slides
         print(f"Generating slide {i} of {total_slides}")
 
         # Add slide
