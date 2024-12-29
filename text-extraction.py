@@ -54,7 +54,9 @@ def process_pdf(pdf_path):
 
     if result:
         print(f"Result: {result}")
-        create_presentation(result)
+
+        # Save the result to a text file
+        save_response_to_text(result, pdf_path)
 
 
 # Function to convert an image to Base64 encoding
@@ -113,6 +115,18 @@ def send_images_to_gemini(encoded_images):
     except Exception as e:
         print(f"Error in send_images_to_gemini: {str(e)}")
         return None
+
+
+def save_response_to_text(response, pdf_path):
+    # Extract the base name of the PDF (without extension)
+    base_name = os.path.splitext(os.path.basename(pdf_path))[0]
+
+    # Create a text file to save the API response
+    output_file = f"{base_name}_response.txt"
+    with open(output_file, "w", encoding="utf-8") as file:
+        file.write(response)
+
+    print(f"API response saved as '{output_file}'.")
 
 
 # Function to create a PowerPoint presentation from Gemini's output

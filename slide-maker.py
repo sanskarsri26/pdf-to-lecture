@@ -1,84 +1,98 @@
 from pptx import Presentation
-from pptx.util import Inches, Pt
+from pptx.util import Pt
+from pptx.dml.color import RGBColor
+from textwrap import wrap
 
-# Create a PowerPoint presentation object
-presentation = Presentation()
+
+# Function to parse the text content and extract slides
+def parse_text_to_slides(file_path):
+    slides = []
+    with open(file_path, "r", encoding="utf-8") as file:
+        content = file.read()
+
+    # Split by each slide block
+    slide_blocks = content.split("**Slide ")
+
+    for block in slide_blocks:
+        if not block.strip():
+            continue
+
+        # Extract title and content
+        title_start = block.find("**Slide Title**:") + len("**Slide Title**:")
+        explanation_start = block.find("**Detailed Explanation**:")
+
+        title = (
+            block[title_start:explanation_start].strip()
+            if explanation_start > -1
+            else None
+        )
+        explanation = (
+            block[explanation_start + len("**Detailed Explanation**:") :].strip()
+            if explanation_start > -1
+            else None
+        )
+
+        if title and explanation:
+            slides.append((title, explanation))
+
+    return slides
 
 
-# Function to add a slide with a title and content
-def add_slide(title, content):
-    slide_layout = presentation.slide_layouts[1]  # Use layout 1 for title and content
+# Function to wrap text for better display
+def wrap_text(text, max_line_length=80):
+    """
+    Wrap text to ensure it fits within the slide content box.
+    """
+    wrapped_lines = []
+    for paragraph in text.split("\n"):
+        wrapped_lines.extend(wrap(paragraph, max_line_length))
+    return "\n".join(wrapped_lines)
+
+
+# Function to add a slide with enhanced formatting
+def add_styled_slide(presentation, title, content):
+    slide_layout = presentation.slide_layouts[1]  # Title and Content layout
     slide = presentation.slides.add_slide(slide_layout)
 
+    # Set slide background color
+    background = slide.background
+    fill = background.fill
+    fill.solid()
+    fill.fore_color.rgb = RGBColor(240, 240, 240)  # Light gray background
+
+    # Style the title
     title_placeholder = slide.shapes.title
-    content_placeholder = slide.shapes.placeholders[1]
-
     title_placeholder.text = title
-    content_placeholder.text = content
+    title_placeholder.text_frame.paragraphs[0].font.bold = True
+    title_placeholder.text_frame.paragraphs[0].font.size = Pt(36)
+    title_placeholder.text_frame.paragraphs[0].font.color.rgb = RGBColor(0, 51, 102)
+
+    # Style the content with wrapped text
+    wrapped_content = wrap_text(content, max_line_length=80)
+    content_placeholder = slide.placeholders[1]
+    content_placeholder.text = wrapped_content
+
+    for paragraph in content_placeholder.text_frame.paragraphs:
+        paragraph.font.size = Pt(18)
+        paragraph.font.color.rgb = RGBColor(0, 0, 0)
+        paragraph.space_after = Pt(10)  # Add spacing between paragraphs
 
 
-# Slide 1: Title Slide
-add_slide(
-    "Nondeterminism by Analogy", "Arizona State University logo (insert logo here)"
-)
+# Main function to create PowerPoint from a text file with enhanced formatting
+def create_styled_presentation(file_path, output_pptx):
+    slides = parse_text_to_slides(file_path)
+    presentation = Presentation()
 
-# Slide 2: Outline
-add_slide(
-    "Outline",
-    "1. Navigating a maze (Determinism)\n2. Navigating a maze (Nondeterminism)\n3. Routing packets on the Internet\n4. Planning moves in Chess\n5. Why Nondeterminism?\n6. Summary and Acknowledgements\n7. References and Thank You",
-)
+    for title, content in slides:
+        add_styled_slide(presentation, title, content)
 
-# Slide 3: Navigating a Maze (Determinism)
-add_slide(
-    "Navigating a Maze: Determinism",
-    "Deterministic strategy: always take the left-most path\n"
-    "Maze 1 (unsolvable with this strategy) and Maze 2 (solvable)\n"
-    "Determinism deals with 'what must be'",
-)
+    presentation.save(output_pptx)
+    print(f"Presentation saved as '{output_pptx}'")
 
-# Slide 4: Navigating a Maze (Nondeterminism)
-add_slide(
-    "Navigating a Maze: Nondeterminism",
-    "Nondeterminism explores all paths\n"
-    "Same mazes as Slide 3, but now all paths are explored\n"
-    "Determinism deals with 'what can happen'",
-)
 
-# Slide 5: Routing Packets on the Internet
-add_slide(
-    "Routing Packets on the Internet",
-    "A network diagram illustrating possible routes from source (src) to destination (dst)\n"
-    "Nodes: circles\nArrows: possible routes",
-)
+# Input text file and output PowerPoint file
+input_text_file = "test.txt"  # Replace with your text file
+output_pptx_file = "Styled_Slides.pptx"
 
-# Slide 6: Planning Moves in Chess
-add_slide(
-    "Planning Moves in Chess",
-    "A game tree showing possible moves for white and black\n"
-    "Branching possibilities of chess moves",
-)
-
-# Slide 7: Why Nondeterminism?
-add_slide(
-    "Why Nondeterminism?",
-    "Explores the power and uncertainty aspects of nondeterminism\n"
-    "Discusses whether it exists in the real world",
-)
-
-# Slide 8: Summary and Acknowledgements
-add_slide(
-    "Summary and Acknowledgements",
-    "Summary of analogies used\nSpecial thanks to contributors",
-)
-
-# Slide 9: References and Thank You
-add_slide(
-    "References and Thank You",
-    "References: ChessCoach source\nThank you for your attention!",
-)
-
-# Save the PowerPoint file
-ppt_filename = "Nondeterminism_by_Analogy.pptx"
-presentation.save(ppt_filename)
-
-print(f"Presentation saved as {ppt_filename}")
+# Create the presentation
+create_styled_presentation(input_text_file, output_pptx_file)
