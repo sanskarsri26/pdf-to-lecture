@@ -76,22 +76,25 @@ def send_images_to_gemini(encoded_images):
     prompt = """
     Please act as a knowledgeable professor with deep expertise in explaining complex concepts across various subjects. For each slide, provide the following:
 
-    1. **Slide Title**: The main title of the slide.
-    2. **Detailed Explanation**: A 4-6 line explanation of the topic. This should include:
-    - A concise but thorough description of the concept.
-    - Important details that should not be missed, ensuring that the explanation is comprehensive for someone learning the topic.
-    - Examples where relevant, or brief analogies that could help clarify complex ideas.
+    Slide Title: The main title of the slide.
+    Detailed Explanation: A 4-6 line explanation of the topic. This should include:
+    A concise but thorough description of the concept.
+    Important details that should not be missed, ensuring that the explanation is comprehensive for someone learning the topic.
+    Examples where relevant, or brief analogies that could help clarify complex ideas.
+    The slides should follow a logical flow so that each slide builds on the previous one. The content should be clear, detailed, and aimed at educating someone who may not be familiar with the topic, ensuring that no important details are omitted.
 
-    The slides should follow a **logical flow** so that each slide builds on the previous one. The content should be clear, detailed, and aimed at educating someone who may not be familiar with the topic, ensuring that no important details are omitted.
+    Please format the output in the following way:
 
-    ### Example Breakdown for One Slide:
-    - **Slide Title**: Introduction to Nondeterminism (or any other subject, e.g., "Photosynthesis in Plants")
-    - **Detailed Explanation**:
-    "Nondeterminism is a concept where multiple possible outcomes or paths exist for a given process or decision. Unlike deterministic systems, where there is only one path to follow, nondeterminism allows for exploration of all possible options. This concept is useful in various fields, including computer science, philosophy, and even economics, to model situations where outcomes are not predetermined."
+    Slide 1:
+    **Slide Title**: [Title Here]
+    **Detailed Explanation**: [Detailed explanation for the slide here.]
 
-    This approach will ensure that every slide is rich with detail and the content is focused on educating the audience, similar to how a professor would explain the topic in a lecture.
+    Slide 2:
+    **Slide Title**: [Title Here]
+    **Detailed Explanation**: [Detailed explanation for the slide here.]
 
-
+    ...
+    The goal is to create a well-structured lecture, where each slide provides rich, detailed information in a digestible format, just like a professor would present the material in a lecture. The slides should be educational, logically progressing, and easy for the learner to follow.
     """
 
     try:
