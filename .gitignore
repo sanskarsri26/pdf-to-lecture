@@ -1,0 +1,13 @@
+.DS_Store
+.env
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+node_modules/
+dist/
+backend/audio/
+backend/data/
+.coverage
+evaluation-report.json
