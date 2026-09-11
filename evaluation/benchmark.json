@@ -1,0 +1,17 @@
+[
+  {
+    "question": "What does spaced practice improve?",
+    "expected_page": 1,
+    "expected_terms": ["long-term", "retention"]
+  },
+  {
+    "question": "Why is retrieval practice useful?",
+    "expected_page": 2,
+    "expected_terms": ["recall", "memory"]
+  },
+  {
+    "question": "What is interleaving?",
+    "expected_page": 3,
+    "expected_terms": ["mixing", "problem"]
+  }
+]
