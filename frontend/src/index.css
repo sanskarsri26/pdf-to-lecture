@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: #f5f3ee;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.font-display {
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.app-shell {
+  background-color: #070a11;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: 38px 38px;
+}
+
+.slide-canvas {
+  min-height: 0;
+}
+
+.slide-title {
+  font-size: clamp(1.9rem, 2.7vw, 3.45rem);
+  line-height: 0.96;
+  overflow-wrap: anywhere;
+}
+
+.slide-bullet-list {
+  font-size: clamp(0.9rem, 1vw, 1.08rem);
+  line-height: 1.35;
+}
+
+.slide-bullet-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.slide-bullet-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.slide-bullet-list::-webkit-scrollbar-thumb {
+  background: rgba(14, 165, 233, 0.28);
+  border-radius: 999px;
+}
+
+audio {
+  accent-color: #22d3ee;
+}
